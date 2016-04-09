@@ -1,4 +1,9 @@
-import "ConvertLib.sol";
+library ConvertLib{
+	function convert(uint amount,uint conversionRate) returns (uint convertedAmount)
+	{
+		return amount * conversionRate;
+	}
+}
 
 // This is just a simple example of a coin-like contract.
 // It is not standards compatible and cannot be expected to talk to other
