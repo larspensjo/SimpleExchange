@@ -51,7 +51,7 @@ contract SimpleExchange is Owned {
         OrderConfirmationEvent(orderId, seller, msg.sender);
     }
 
-    function cancelOffer() {
+    function cancelSellOrder() {
         removeSellOrder(msg.sender);
     }
 
