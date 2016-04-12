@@ -10,7 +10,7 @@ contract SimpleExchange is Owned {
     event OrderConfirmationEvent(uint orderId, address seller, address buyer);
     struct SellOrder {
         uint256 volume;
-        uint256 price; // Total price, in ether
+        uint256 price; // Total price, in wei
         Token token;
         TokenRegistry registry; // Optional
         address seller; // Pointing back to the offer table
@@ -44,10 +44,11 @@ contract SimpleExchange is Owned {
     function buy(uint orderId) {
         SellOrder sellorder = sellOrderMap[orderId];
         if (sellorder.volume == 0) throw; // There was no transaction
-        if (msg.sender.balance < sellorder.price) throw;
+        if (msg.value != sellorder.price) throw;
         Token token = sellorder.token;
         address seller = sellorder.seller;
         if (!token.transfer(msg.sender, sellorder.volume)) throw;
+        seller.send(msg.value);
         removeSellOrder(seller);
         OrderConfirmationEvent(orderId, seller, msg.sender);
     }
