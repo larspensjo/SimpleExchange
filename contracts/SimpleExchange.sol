@@ -6,7 +6,7 @@ import "TokenRegistry.sol";
 
 
 contract SimpleExchange is Owned {
-    uint nextOrderId = 1; // Identifies an order
+    uint public nextOrderId = 1; // Identifies an order
     event OrderConfirmationEvent(uint orderId, address seller, address buyer);
     struct SellOrder {
         uint256 volume;
@@ -15,16 +15,16 @@ contract SimpleExchange is Owned {
         TokenRegistry registry; // Optional
         address seller; // Pointing back to the offer table
     }
-    mapping (uint => SellOrder) sellOrderMap; // Map from order id
-    mapping (address => uint) orderIdMap; // Map from seller address to order. There can only be one.
+    mapping (uint => SellOrder) public sellOrderMap; // Map from order id
+    mapping (address => uint) public orderIdMap; // Map from seller address to order. There can only be one.
 
     function SimpleExchange() {
     }
 
-    function removeSellOrder(address seller) internal {
+    function removeSellOrder(uint orderId) internal {
         uint orderId = orderIdMap[seller];
-        if (orderId == 0) throw;
-        delete orderIdMap[seller];
+        SellOrder sellorder = sellOrderMap[orderId];
+        delete orderIdMap[sellorder.seller];
         delete sellOrderMap[orderId];
     }
 
@@ -32,6 +32,7 @@ contract SimpleExchange is Owned {
         if (_volume == 0) throw;
         if (_token.balanceOf(msg.sender) < _volume) throw;
         if (_token.allowance(msg.sender, this) < _volume) throw;
+        if (!_token.transferFrom(msg.sender, this, _volume)) throw;
         uint oldOrderId = orderIdMap[msg.sender];
         if (oldOrderId != 0) delete sellOrderMap[oldOrderId];
         orderId = nextOrderId++;
@@ -46,13 +47,18 @@ contract SimpleExchange is Owned {
         if (msg.sender.balance < sellorder.price) throw;
         Token token = sellorder.token;
         address seller = sellorder.seller;
-        if (!token.transferFrom(seller, msg.sender, sellorder.volume)) throw;
+        if (!token.transfer(msg.sender, sellorder.volume)) throw;
         removeSellOrder(seller);
         OrderConfirmationEvent(orderId, seller, msg.sender);
     }
 
     function cancelSellOrder() {
-        removeSellOrder(msg.sender);
+        uint orderId = orderIdMap[msg.sender];
+        if (orderId == 0) throw;
+        SellOrder sellorder = sellOrderMap[orderId];
+        Token token = sellorder.token;
+        if (!token.transfer(seller, sellorder.volume)) throw; // Return the tokens
+        removeSellOrder(orderId);
     }
 
     /* This unnamed function is called whenever someone tries to send ether to it */
