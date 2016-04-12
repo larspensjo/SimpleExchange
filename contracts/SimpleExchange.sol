@@ -13,32 +13,32 @@ contract SimpleExchange is Owned {
         uint256 price; // Total price, in wei
         Token token;
         TokenRegistry registry; // Optional
-        address seller; // Pointing back to the offer table
+        address seller;
     }
     mapping (uint => SellOrder) public sellOrderMap; // Map from order id
-    mapping (address => uint) public orderIdMap; // Map from seller address to order. There can only be one.
+
+    modifier zeroFunding {
+        if (msg.value != 0) throw;
+        _
+    }
 
     function SimpleExchange() {
     }
 
     function removeSellOrder(uint orderId) internal {
-        uint orderId = orderIdMap[seller];
         SellOrder sellorder = sellOrderMap[orderId];
-        delete orderIdMap[sellorder.seller];
         delete sellOrderMap[orderId];
     }
 
-    function createOffer(uint256 _volume, uint256 _price, Token _token, TokenRegistry _registry) returns (uint orderId) {
-        if (_volume == 0) throw;
-        if (_token.balanceOf(msg.sender) < _volume) throw;
-        if (_token.allowance(msg.sender, this) < _volume) throw;
-        if (!_token.transferFrom(msg.sender, this, _volume)) throw;
-        uint oldOrderId = orderIdMap[msg.sender];
-        if (oldOrderId != 0) delete sellOrderMap[oldOrderId];
-        orderId = nextOrderId++;
+    // Negative return value means there is an error.
+    function createOffer(uint256 _volume, uint256 _price, Token _token, TokenRegistry _registry) zeroFunding returns (int) {
+        if (_volume == 0) return -1;
+        if (_token.balanceOf(msg.sender) < _volume) return -2;
+        if (_token.allowance(msg.sender, this) < _volume) return -3;
+        if (!_token.transferFrom(msg.sender, this, _volume)) return -4;
+        uint orderId = nextOrderId++;
         sellOrderMap[orderId] = SellOrder(_volume, _price, _token, _registry, msg.sender); // If there was an old offer, it is replaced
-        orderIdMap[msg.sender] = orderId;
-        return;
+        return int(orderId);
     }
 
     function buy(uint orderId) {
@@ -49,16 +49,16 @@ contract SimpleExchange is Owned {
         address seller = sellorder.seller;
         if (!token.transfer(msg.sender, sellorder.volume)) throw;
         seller.send(msg.value);
-        removeSellOrder(seller);
+        removeSellOrder(orderId);
         OrderConfirmationEvent(orderId, seller, msg.sender);
     }
 
-    function cancelSellOrder() {
-        uint orderId = orderIdMap[msg.sender];
-        if (orderId == 0) throw;
+    function cancelSellOrder(uint orderId) zeroFunding {
         SellOrder sellorder = sellOrderMap[orderId];
         Token token = sellorder.token;
-        if (!token.transfer(seller, sellorder.volume)) throw; // Return the tokens
+        if (token == Token(0)) throw;
+        // Return the tokens
+        if (!token.transfer(sellorder.seller, sellorder.volume)) throw;
         removeSellOrder(orderId);
     }
 
