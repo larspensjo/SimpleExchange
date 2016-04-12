@@ -57,6 +57,7 @@ contract SimpleExchange is Owned {
         SellOrder sellorder = sellOrderMap[orderId];
         Token token = sellorder.token;
         if (token == Token(0)) throw;
+        if (msg.sender != sellorder.seller || msg.sender != owner) throw;
         // Return the tokens
         if (!token.transfer(sellorder.seller, sellorder.volume)) throw;
         removeSellOrder(orderId);
