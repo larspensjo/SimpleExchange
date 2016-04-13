@@ -17,10 +17,20 @@ function refreshBalance() {
     console.log(e);
     setStatus("Error getting balance; see log.");
   });
+
+  var metaExchange = SimpleExchange.deployed();
+
+  metaExchange.nextOrderId.call({from: account}).then(function(value) {
+    var nextOrderId_element = document.getElementById("nextOrderId");
+    nextOrderId_element.innerHTML = value.valueOf();
+  }).catch(function(e) {
+    console.log(e);
+    setStatus("Error getting balance; see log.");
+  });
 };
 
 function sendCoin() {
-  var meta = MetaCoin.deployed();
+  var meta = SimpleExchange.deployed();
 
   var amount = parseInt(document.getElementById("amount").value);
   var receiver = document.getElementById("receiver").value;
