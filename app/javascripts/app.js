@@ -8,9 +8,9 @@ function setStatus(message) {
 };
 
 function refreshBalance() {
-  var meta = MetaCoin.deployed();
+  var meta = Standard_Token.deployed();
 
-  meta.getBalance.call(account, {from: account}).then(function(value) {
+  meta.balanceOf.call(account, {from: account}).then(function(value) {
     var balance_element = document.getElementById("balance");
     balance_element.innerHTML = value.valueOf();
   }).catch(function(e) {
@@ -50,7 +50,5 @@ window.onload = function() {
 
     accounts = accs;
     account = accounts[0];
-
-    refreshBalance();
   });
 }

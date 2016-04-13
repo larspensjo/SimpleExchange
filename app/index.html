@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>MetaCoin - Default Truffle App</title>
+  <title>Simple Exchange</title>
   <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
   <link href="./app.css" rel='stylesheet' type='text/css'>
   <script src="./app.js"></script>
 </head>
 <body>
-  <h1>MetaCoin</h1>
-  <h2>Example Truffle Dapp</h2>
+  <h1>Token</h1>
+  <h2>Give the address of the token</h2>
+  <br><label for="token">Token:</label><input type="text" id="token" placeholder="e.g., 0x93e66d9baea28c17d9fc393b53e3fbdd76899dae"></input>
+  <br><br><button id="load" onclick="refreshBalance()">Send MetaCoin</button>
   <h3>You have <span class="black"><span id="balance"></span> META</span></h3>
 
   <br>
