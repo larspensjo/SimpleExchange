@@ -10,8 +10,7 @@ module.exports = {
     "images/": "images/"
   },
   deploy: [
-    "SimpleExchange",
-    "Standard_Token"
+    "SimpleExchange"
   ],
   rpc: {
     host: "localhost",
