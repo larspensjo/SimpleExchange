@@ -7,7 +7,6 @@ import "TokenRegistry.sol";
 
 contract SimpleExchange is Owned {
     uint public nextOrderId = 1; // Identifies an order
-    uint public numberOfActiveOrders = 0;
     event OrderConfirmationEvent(uint orderId, address seller, address buyer);
     struct SellOrder {
         uint256 volume;
@@ -18,6 +17,11 @@ contract SimpleExchange is Owned {
     }
     mapping (uint => SellOrder) public sellOrderMap; // Map from order id
 
+    // The following data structures are only used for exporting orders
+
+    uint[] public openOrderList;
+    mapping (uint => uint) public indexMap;
+
     modifier zeroFunding {
         if (msg.value != 0) throw;
         _
@@ -27,9 +31,17 @@ contract SimpleExchange is Owned {
     }
 
     function removeSellOrder(uint orderId) internal {
+        // Remove the order itself
         SellOrder sellorder = sellOrderMap[orderId];
         delete sellOrderMap[orderId];
-        numberOfActiveOrders--;
+
+        // Find the index in the order list, and remove it
+        uint i = indexMap[orderId];
+        openOrderList[i] = openOrderList[openOrderList.length-1];
+        openOrderList.length--;
+        indexMap[openOrderList[i]] = i; // This order was moved to index 'i'
+        delete indexMap[orderId]; // Remove the map entry for the deleted order
+
     }
 
     // Negative return value means there is an error.
@@ -40,7 +52,10 @@ contract SimpleExchange is Owned {
         if (!_token.transferFrom(msg.sender, this, _volume)) return -4;
         uint orderId = nextOrderId++;
         sellOrderMap[orderId] = SellOrder(_volume, _price, _token, _registry, msg.sender); // If there was an old offer, it is replaced
-        numberOfActiveOrders++;
+
+        uint i = openOrderList.push(orderId);
+        indexMap[orderId] = i;
+
         return int(orderId);
     }
 
@@ -72,7 +87,7 @@ contract SimpleExchange is Owned {
     }
 
     function destruct() onlyOwner {
-        if (numberOfActiveOrders > 0) throw;
+        if (openOrderList.length > 0) throw;
         selfdestruct(owner);
     }
 }
