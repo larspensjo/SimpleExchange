@@ -8,14 +8,14 @@ function setStatus(message) {
 };
 
 function refreshBalance() {
-  var meta = Standard_Token.deployed();
+  var meta = Standard_Token.at(document.getElementById("token").value);
 
   meta.balanceOf.call(account, {from: account}).then(function(value) {
     var balance_element = document.getElementById("balance");
     balance_element.innerHTML = value.valueOf();
   }).catch(function(e) {
     console.log(e);
-    setStatus("Error getting balance; see log.");
+    setStatus(e);
   });
 
   var metaExchange = SimpleExchange.deployed();
@@ -25,7 +25,7 @@ function refreshBalance() {
     nextOrderId_element.innerHTML = value.valueOf();
   }).catch(function(e) {
     console.log(e);
-    setStatus("Error getting balance; see log.");
+    setStatus("Error next order; see log.");
   });
 };
 
