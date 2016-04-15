@@ -7,22 +7,38 @@ function setStatus(message) {
   status.innerHTML = message;
 };
 
-function refreshBalance() {
+function updateTotalPrice() {
+  var volume = parseFloat(document.getElementById("amount").value);
+  var unitPrice = parseFloat(document.getElementById("unit_price").value);
+  var total_price_element = document.getElementById("total_price");
+  total_price_element.innerHTML = volume * unitPrice;
+};
+
+function getBalance() {
+  setStatus("");
   var meta = Standard_Token.at(document.getElementById("token").value);
 
   meta.balanceOf.call(account, {from: account}).then(function(value) {
     var balance_element = document.getElementById("balance");
     balance_element.innerHTML = value.valueOf();
   }).catch(function(e) {
-    console.log(e);
+    console.log("Error: " + e);
     setStatus(e);
   });
+};
 
+function createOrder() {
+  setStatus("");
   var metaExchange = SimpleExchange.deployed();
+  
+  var registry = 0;
+  var token = document.getElementById("token").value;
+  var volume = parseFloat(document.getElementById("amount").value);
+  var unitPrice = parseFloat(document.getElementById("unit_price").value);
+  setStatus("Launching sell order of " + volume + " for total " + volume * unitPrice + " ether...");
 
-  metaExchange.nextOrderId.call({from: account}).then(function(value) {
-    var nextOrderId_element = document.getElementById("nextOrderId");
-    nextOrderId_element.innerHTML = value.valueOf();
+  metaExchange.createOffer(volume, volume * unitPrice, token, registry, {from: account}).then(function(value) {
+    setStatus("Created order " + value);
   }).catch(function(e) {
     console.log(e);
     setStatus("Error next order; see log.");
