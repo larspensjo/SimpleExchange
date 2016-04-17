@@ -2,9 +2,13 @@ var accounts;
 var account;
 var balance;
 
+
 function setStatus(message) {
   var status = document.getElementById("status");
   status.innerHTML = message;
+  var container = document.getElementById("log_window");
+  container.innerHTML = container.innerHTML + ('<p>' + message + '</p>');
+  container.scrollTop = container.scrollHeight;
 };
 
 function updateTotalPrice() {
@@ -15,7 +19,7 @@ function updateTotalPrice() {
     total_price_element.innerHTML = "";
     return;
    }
-  total_price_element.innerHTML = volume * unitPrice;
+  total_price_element.innerHTML = "Total: " + (volume * unitPrice) + " ether";
 };
 
 function getBalance() {
@@ -24,7 +28,7 @@ function getBalance() {
 
   meta.balanceOf.call(account, {from: account}).then(function(value) {
     var balance_element = document.getElementById("balance");
-    balance_element.innerHTML = value.valueOf();
+    balance_element.innerHTML = "Max " + value.valueOf() + " units available";
   }).catch(function(e) {
     console.log("Error: " + e);
     setStatus(e);
@@ -40,6 +44,7 @@ function createOrder() {
   var unitPrice = parseFloat(document.getElementById("unit_price").value);
 
   setStatus("Launching sell order of " + volume + " for total " + volume * unitPrice + " ether...");
+  setStatus("Cancelling for now"); return;
 
   metaExchange.createOffer(volume, volume * unitPrice, token, registry, {from: account}).then(function(tx_id) {
     setStatus("Created order " + tx_id);

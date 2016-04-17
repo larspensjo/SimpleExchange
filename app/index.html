@@ -10,13 +10,17 @@
   <h1>Simple Exchange</h1>
   <br>
   <h2>Give the address of the token</h2>
-  <br><label for="token">Token:</label><input type="text" id="token" placeholder="e.g., 0x93e66d9baea28c17d9fc393b53e3fbdd76899dae" onblur="getBalance()"></input>
-  <br><label for="amount">Amount:</label><input type="text" id="amount" placeholder="e.g., 95" oninput="updateTotalPrice()"></input>
+  <br><label for="token">Token address:</label><input type="text" id="token" placeholder="e.g., 0x93e66d9baea28c17d9fc393b53e3fbdd76899dae" onblur="getBalance()"></input>
+  <span class="black"><span id="balance"></span></span>
+  <br>
+  <br><label for="amount">Token units:</label><input type="text" id="amount" placeholder="e.g., 95" oninput="updateTotalPrice()"></input>
+  <br>
   <br><label for="price">Unit price in ether:</label><input type="text" id="unit_price" placeholder="e.g., 0.12" oninput="updateTotalPrice()"></input>
-  <h3>Max amount: <span class="black"><span id="balance"></span></span></h3>
-  <h3>Total price: <span class="black"><span id="total_price"></span></span></h3>
+  <span class="black"><span id="total_price"></span></span>
   <br><br>
   <button id="approve" onclick="checkAllowanceAndCreateOrder()">Create order</button>
+  <br><br>
+  <div class="container" id="log_window"><br><br><br></div>
   <br><br>
   <span id="status"></span>
 </body>
