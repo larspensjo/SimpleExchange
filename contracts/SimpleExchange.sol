@@ -7,10 +7,10 @@ import "TokenRegistry.sol";
 
 contract SimpleExchange is Owned {
     uint public nextOrderId = 1; // Identifies an order
-    event OrderConfirmationEvent(uint orderId, address seller, address buyer);
+    event OrderConfirmationEvent(uint orderId, address seller, address buyer, uint256 volume);
     struct SellOrder {
         uint256 volume;
-        uint256 price; // Total price, in wei
+        uint256 unitPrice;
         Token token;
         TokenRegistry registry; // Optional
         address seller;
@@ -45,13 +45,13 @@ contract SimpleExchange is Owned {
     }
 
     // Negative return value means there is an error.
-    function createOffer(uint256 _volume, uint256 _price, Token _token, TokenRegistry _registry) zeroFunding returns (int) {
+    function createOffer(uint256 _volume, uint256 _unitPrice, Token _token, TokenRegistry _registry) zeroFunding returns (int) {
         if (_volume == 0) return -1;
         if (_token.balanceOf(msg.sender) < _volume) return -2;
         if (_token.allowance(msg.sender, this) < _volume) return -3;
         if (!_token.transferFrom(msg.sender, this, _volume)) return -4;
         uint orderId = nextOrderId++;
-        sellOrderMap[orderId] = SellOrder(_volume, _price, _token, _registry, msg.sender); // If there was an old offer, it is replaced
+        sellOrderMap[orderId] = SellOrder(_volume, _unitPrice, _token, _registry, msg.sender); // If there was an old offer, it is replaced
 
         uint i = openOrderList.push(orderId);
         indexMap[orderId] = i;
@@ -59,16 +59,22 @@ contract SimpleExchange is Owned {
         return int(orderId);
     }
 
-    function buy(uint orderId) {
+    // Allow partial buys. Price must match exactly, or something has changed.
+    function buy(uint orderId, uint256 _volume, uint256 _unitPrice) {
         SellOrder sellorder = sellOrderMap[orderId];
         if (sellorder.volume == 0) throw; // There was no transaction
-        if (msg.value != sellorder.price) throw;
+        if (sellorder.unitPrice != _unitPrice) throw;
+        if (sellorder.volume < _volume) throw;
+        uint totalPrice = _unitPrice * _volume;
+        if (msg.value != totalPrice) throw;
         Token token = sellorder.token;
         address seller = sellorder.seller;
-        if (!token.transfer(msg.sender, sellorder.volume)) throw;
+        if (!token.transfer(msg.sender, _volume)) throw;
         seller.send(msg.value);
-        removeSellOrder(orderId);
-        OrderConfirmationEvent(orderId, seller, msg.sender);
+        sellorder.volume -= _volume;
+        if (sellorder.volume == 0)
+            removeSellOrder(orderId);
+        OrderConfirmationEvent(orderId, seller, msg.sender, _volume);
     }
 
     function cancelSellOrder(uint orderId) zeroFunding {
