@@ -2,7 +2,6 @@ var accounts;
 var account;
 var balance;
 
-
 function setStatus(message) {
   var status = document.getElementById("status");
   status.innerHTML = message;
@@ -22,13 +21,23 @@ function updateTotalPrice() {
   total_price_element.innerHTML = "Total: " + (volume * unitPrice) + " ether";
 };
 
-function getBalance() {
-  setStatus("");
-  var meta = Standard_Token.at(document.getElementById("token").value);
+function getTokenInfo() {
+  var metaToken = Standard_Token.at(document.getElementById("token").value);
 
-  meta.balanceOf.call(account, {from: account}).then(function(value) {
+  metaToken.balanceOf.call(account, {from: account}).then(function(value) {
     var balance_element = document.getElementById("balance");
     balance_element.innerHTML = "Max " + value.valueOf() + " units available";
+  }).catch(function(e) {
+    console.log("Error: " + e);
+    setStatus(e);
+  });
+
+  var metaExchange = SimpleExchange.deployed();
+  metaToken.allowance.call(account, metaExchange.address, {from: account}).then(function(value) {
+    var balance_element = document.getElementById("allowance");
+    var allowance = parseFloat(value.valueOf());
+    if (allowance > 0)
+      balance_element.innerHTML = "Remaining allowance: " + allowance + " token units";
   }).catch(function(e) {
     console.log("Error: " + e);
     setStatus(e);
@@ -43,7 +52,7 @@ function createOrder() {
   var volume = parseFloat(document.getElementById("amount").value);
   var unitPrice = parseFloat(document.getElementById("unit_price").value);
 
-  setStatus("Launching sell order of " + volume + " for total " + volume * unitPrice + " ether...");
+  setStatus("Launching sell order of " + volume + " tokens for total " + volume * unitPrice + " ether...");
   setStatus("Cancelling for now"); return;
 
   metaExchange.createOffer(volume, volume * unitPrice, token, registry, {from: account}).then(function(tx_id) {
@@ -55,7 +64,7 @@ function createOrder() {
 };
 
 function checkAllowanceAndCreateOrder() {
-  setStatus("");
+  setStatus("-------------------------------------");
   var metaToken = Standard_Token.at(document.getElementById("token").value);
   var metaExchange = SimpleExchange.deployed();
 
@@ -71,19 +80,13 @@ function checkAllowanceAndCreateOrder() {
   var blocknumber = web3.eth.blockNumber;
 
   metaToken.allowance.call(account, metaExchange.address, {from: account}).then(function(value) {
-    if (parseFloat(value) >= totalPrice)
+    if (parseFloat(value.valueOf()) >= volume)
       createOrder();
     else {
       setStatus("Requesting approval for " + volume + " units");
-      var isApproved = false;
 
       metaToken.approve(metaExchange.address, volume, {from: account}).then(function(tx_id) {
-        // setStatus("Approval result: " + tx_id);
-        if (isApproved) {
-          setStatus("Can now create order");
-        } else {
-          setStatus("Not approved, cancelled");
-        }
+        setStatus("Approval result: " + tx_id);
       }).catch(function(e) {
         console.log("Error: " + e);
         setStatus(e);
@@ -94,7 +97,7 @@ function checkAllowanceAndCreateOrder() {
       events.watch(function(error, result) {
           if (error == null && result.args._owner == account && result.args._spender == metaExchange.address && result.args._value.c[0] >= volume) {
             setStatus("Approved for " + result.args._value.c[0] + " units ");
-            isApproved = true;
+            createOrder();
           } else {
             setStatus("Event: " + error + " result " + result);
           }

@@ -10,10 +10,11 @@
   <h1>Simple Exchange</h1>
   <br>
   <h2>Give the address of the token</h2>
-  <br><label for="token">Token address:</label><input type="text" id="token" placeholder="e.g., 0x93e66d9baea28c17d9fc393b53e3fbdd76899dae" onblur="getBalance()"></input>
+  <br><label for="token">Token address:</label><input type="text" id="token" placeholder="e.g., 0x93e66d9baea28c17d9fc393b53e3fbdd76899dae" onblur="getTokenInfo()"></input>
   <span class="black"><span id="balance"></span></span>
   <br>
   <br><label for="amount">Token units:</label><input type="text" id="amount" placeholder="e.g., 95" oninput="updateTotalPrice()"></input>
+  <span class="black"><span id="allowance"></span></span>
   <br>
   <br><label for="price">Unit price in ether:</label><input type="text" id="unit_price" placeholder="e.g., 0.12" oninput="updateTotalPrice()"></input>
   <span class="black"><span id="total_price"></span></span>
