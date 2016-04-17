@@ -70,9 +70,13 @@ function checkAllowanceAndCreateOrder() {
       createOrder();
     else {
       setStatus("Requesting approval for " + volume + " units");
+      var isApproved = false;
 
       metaToken.approve(metaExchange.address, volume, {from: account}).then(function(tx_id) {
-        setStatus("Approval result: " + tx_id);
+        // setStatus("Approval result: " + tx_id);
+        if (isApproved) {
+          setStatus("Can now create order");
+        }
       }).catch(function(e) {
         console.log("Error: " + e);
         setStatus(e);
@@ -81,7 +85,12 @@ function checkAllowanceAndCreateOrder() {
 
       var events = metaToken.Approval({fromBlock: blocknumber, toBlock: 'latest'});
       events.watch(function(error, result) {
-          setStatus("Event: " + error + " result " + result);
+          if (error == null && result.args._owner == account && result.args._spender == metaExchange.address && result.args._value.c[0] >= volume) {
+            setStatus("Approved for " + result.args._value.c[0] + " units ");
+            isApproved = true;
+          } else {
+            setStatus("Event: " + error + " result " + result);
+          }
       });
     }
   }).catch(function(e) {
