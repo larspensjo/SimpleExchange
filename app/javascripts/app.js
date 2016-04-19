@@ -141,5 +141,7 @@ window.onload = function() {
 
     accounts = accs;
     account = accounts[0];
+    var orderTable_element = document.getElementById("table_body");
+    orderTable_element.innerHTML = orderTable_element.innerHTML + '<tr><td>dummy</td><td>0x30760bA32E58e54ebB1122937e295c20193E5de7</td><td>10</td><td>50</td><td><a href="xx">Buy</a></td></tr>';
   });
 }

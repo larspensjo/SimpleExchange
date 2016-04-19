@@ -8,21 +8,26 @@
 </head>
 <body>
   <h1>Simple Exchange</h1>
-  <br>
-  <h2>Give the address of the token</h2>
-  <br><label for="token">Token address:</label><input type="text" id="token" placeholder="e.g., 0x93e66d9baea28c17d9fc393b53e3fbdd76899dae" onblur="getTokenInfo()"></input>
-  <span class="black"><span id="balance"></span></span>
-  <br>
-  <br><label for="amount">Token units:</label><input type="text" id="amount" placeholder="e.g., 95" oninput="updateTotalPrice()"></input>
-  <span class="black"><span id="allowance"></span></span>
-  <br>
-  <br><label for="price">Unit price in ether:</label><input type="text" id="unit_price" placeholder="e.g., 0.12" oninput="updateTotalPrice()"></input>
-  <span class="black"><span id="total_price"></span></span>
+  <a href="./order.html">Place order</a>
   <br><br>
-  <button id="approve" onclick="checkAllowanceAndCreateOrder()">Create order</button>
-  <br><br>
-  <div class="container" id="log_window"><br><br><br></div>
-  <br><br>
-  <span id="status"></span>
+  <table>
+    <thead>
+      <tr role="row">
+        <th align="left" role="columnheader">Order</th>
+        <th align="left" role="columnheader">Token</th>
+        <th align="left" role="columnheader">Volume</th>
+        <th align="left" role="columnheader">Price/token</th>
+      </tr>
+    </thead>
+    <tbody role="alert" id="table_body">
+      <tr>
+        <td>dummy</td>
+        <td>0x30760bA32E58e54ebB1122937e295c20193E5de7</td>
+        <td>10</td>
+        <td>50</td>
+        <td><a href="xx">Buy</a></td>
+      </tr>
+    </tbody>
+  </table>
 </body>
 </html>
