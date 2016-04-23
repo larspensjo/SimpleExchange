@@ -10,6 +10,26 @@ function setStatus(message) {
   container.scrollTop = container.scrollHeight;
 };
 
+function displayOrderLine(orderId, token, volume, unitPrice) {
+    var orderTable_element = document.getElementById("table_body");
+    orderTable_element.innerHTML =
+        orderTable_element.innerHTML + '<tr><td>' +
+        orderId + '</td><td>' +
+        token + '</td><td>' +
+        volume + '</td><td>' +
+        unitPrice + '</td><td><a href="xx">Buy</a></td></tr>';
+}
+
+function readOrderList(i) {
+  var metaExchange = SimpleExchange.deployed();
+  metaToken.openOrderList.call(i).then(function(value) {
+    var x = value;
+  }).catch(function(e) {
+    console.log("readOrderList error: " + e);
+    setStatus(e);
+  });
+}
+
 function updateTotalPrice() {
   var volume = parseFloat(document.getElementById("amount").value);
   var unitPrice = parseFloat(document.getElementById("unit_price").value);
@@ -141,7 +161,5 @@ window.onload = function() {
 
     accounts = accs;
     account = accounts[0];
-    var orderTable_element = document.getElementById("table_body");
-    orderTable_element.innerHTML = orderTable_element.innerHTML + '<tr><td>dummy</td><td>0x30760bA32E58e54ebB1122937e295c20193E5de7</td><td>10</td><td>50</td><td><a href="xx">Buy</a></td></tr>';
   });
 }
